@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FILE_NAME "users.txt"
+#define FILE_NAME "user_records.txt"
 
 struct User {
     int id;
@@ -51,17 +51,21 @@ void readUsers() {
     struct User user;
 
     FILE *file = fopen(FILE_NAME, "r");
+
     if (file == NULL) {
         printf("No users found.\n");
         return;
     }
 
     printf("\n--- Users ---\n");
-    while (fscanf(file, "%d|%49[^|]|%d\n",
+
+    while (fscanf(file, "%d|%49[^|]|%d",
                   &user.id, user.name, &user.age) == 3) {
+
         printf("ID: %d | Name: %s | Age: %d\n",
                user.id, user.name, user.age);
     }
+
     fclose(file);
 }
 
@@ -71,7 +75,7 @@ void updateUser() {
     int found = 0;
 
     FILE *file = fopen(FILE_NAME, "r");
-    FILE *temp = fopen("temp.txt", "w");
+    FILE *temp = fopen("user_records_temp.txt", "w");
 
     if (file == NULL) {
         printf("No users found.\n");
@@ -87,7 +91,7 @@ void updateUser() {
     printf("Enter ID to update: ");
     scanf("%d", &searchId);
 
-    while (fscanf(file, "%d|%49[^|]|%d\n",
+    while (fscanf(file, "%d|%49[^|]|%d",
                   &user.id, user.name, &user.age) == 3) {
 
         if (user.id == searchId) {
@@ -108,7 +112,7 @@ void updateUser() {
     fclose(temp);
 
     remove(FILE_NAME);
-    rename("temp.txt", FILE_NAME);
+    rename("user_records_temp.txt", FILE_NAME);
 
     if (found) {
         printf("User updated successfully.\n");
@@ -123,7 +127,7 @@ void deleteUser() {
     int found = 0;
 
     FILE *file = fopen(FILE_NAME, "r");
-    FILE *temp = fopen("temp.txt", "w");
+    FILE *temp = fopen("user_records_temp.txt", "w");
 
     if (file == NULL) {
         printf("No users found.\n");
@@ -139,7 +143,7 @@ void deleteUser() {
     printf("Enter ID to delete: ");
     scanf("%d", &deleteId);
 
-    while (fscanf(file, "%d|%49[^|]|%d\n",
+    while (fscanf(file, "%d|%49[^|]|%d",
                   &user.id, user.name, &user.age) == 3) {
 
         if (user.id == deleteId) {
@@ -155,7 +159,7 @@ void deleteUser() {
     fclose(temp);
 
     remove(FILE_NAME);
-    rename("temp.txt", FILE_NAME);
+    rename("user_records_temp.txt", FILE_NAME);
 
     if (found) {
         printf("User deleted successfully.\n");
