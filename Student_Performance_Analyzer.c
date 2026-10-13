@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 
 struct Student
@@ -54,14 +55,14 @@ void printPerformance(char grade)
     }
 }
 
-void printRollNumbers(int current, int n)
+void printRollNumbers(struct Student students[], int current, int n)
 {
-    if (current > n)
+    if (current >= n)
         return;
 
-    printf("%d ", current);
+    printf("%d ", students[current].rollNumber);
 
-    printRollNumbers(current + 1, n);
+    printRollNumbers(students, current + 1, n);
 }
 
 int main()
@@ -75,16 +76,32 @@ int main()
     printf("Enter number of students: ");
     scanf("%d", &n);
 
+    if (n < 1 || n > 100)
+    {
+        printf("Error: Number of students must be between 1 and 100.\n");
+        return 0;
+    }
+
     struct Student students[100];
 
     for (int i = 0; i < n; i++)
     {
-        scanf("%d %s %d %d %d",
-              &students[i].rollNumber,
-              students[i].name,
+        printf("\nEnter roll number and name for student %d: ", i + 1);
+        scanf("%d %49[^\n]", &students[i].rollNumber, students[i].name);
+
+        printf("Enter marks in three subjects (1-100): ");
+        scanf("%d %d %d",
               &students[i].marks1,
               &students[i].marks2,
               &students[i].marks3);
+
+        if (students[i].marks1 < 1 || students[i].marks1 > 100 ||
+            students[i].marks2 < 1 || students[i].marks2 > 100 ||
+            students[i].marks3 < 1 || students[i].marks3 > 100)
+        {
+            printf("Error: Marks must be between 1 and 100.\n");
+            return 0;
+        }
     }
 
     printf("\n");
@@ -112,7 +129,7 @@ int main()
     }
 
     printf("List of Roll Numbers (via recursion): ");
-    printRollNumbers(1, n);
+    printRollNumbers(students, 0, n);
     printf("\n");
 
     return 0;
