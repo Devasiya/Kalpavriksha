@@ -15,29 +15,22 @@ void displayMatrix(int *matrix, int n)
     }
 }
 
-void rotateClockwise(int *matrix, int n)
-{
-    int i, j, temp;
-
-    for (i = 0; i < n / 2; i++)
+    void rotateClockwise(int *matrix, int n)
     {
-        for (j = i; j < n - 1 - i; j++)
+        int i, j, temp;
+
+        for (i = 0; i < n / 2; i++)
         {
-            temp = *(matrix + i * n + j);
-
-            *(matrix + i * n + j) =
-                *(matrix + (n - 1 - j) * n + i);
-
-            *(matrix + (n - 1 - j) * n + i) =
-                *(matrix + (n - 1 - i) * n + (n - 1 - j));
-
-            *(matrix + (n - 1 - i) * n + (n - 1 - j)) =
-                *(matrix + j * n + (n - 1 - i));
-
-            *(matrix + j * n + (n - 1 - i)) = temp;
+            for (j = i; j < n - 1 - i; j++)
+            {
+                temp = *(matrix + i * n + j);
+                *(matrix + i * n + j) = *(matrix + (n - 1 - j) * n + i);
+                *(matrix + (n - 1 - j) * n + i) = *(matrix + (n - 1 - i) * n + (n - 1 - j));
+                *(matrix + (n - 1 - i) * n + (n - 1 - j)) =*(matrix + j * n + (n - 1 - i));
+                *(matrix + j * n + (n - 1 - i)) = temp;
+            }
         }
     }
-}
 
 void smoothMatrix(int *matrix, int n)
 {
