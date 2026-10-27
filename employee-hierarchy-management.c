@@ -1,7 +1,5 @@
-
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 typedef struct Employee
 {
@@ -17,88 +15,118 @@ typedef struct Employee
 
 Employee *employees = NULL;
 
-/* Find an employee using ID */
+/* Find an employee using their ID */
 Employee *findEmployee(int id)
 {
-    Employee *temp = employees;
+    Employee *current = employees;
 
-    while (temp != NULL)
+    while (current != NULL)
     {
-        if (temp->id == id)
-            return temp;
+        if (current->id == id)
+            return current;
 
-        temp = temp->nextEmployee;
+        current = current->nextEmployee;
     }
 
     return NULL;
 }
 
-/* Add an employee */
+/* Add a new employee */
 void addEmployee(void)
 {
-    Employee *newEmployee, *manager = NULL, *temp;
-    int id, managerID;
+    Employee *newEmployee;
+    Employee *manager;
+    Employee *last;
 
-    printf("Enter Employee ID: ");
-    scanf("%d", &id);
+    int managerId;
 
-    if (findEmployee(id) != NULL)
+    newEmployee = malloc(sizeof(Employee));
+
+    if (newEmployee == NULL)
     {
-        printf("Employee ID already exists.\n");
+        printf("Memory allocation failed.\n");
         return;
     }
 
-    printf("Enter Name: ");
-    scanf(" %99[^\n]", (newEmployee = malloc(sizeof(Employee)))->name);
+    printf("Enter Employee ID: ");
+    if (scanf("%d", &newEmployee->id) != 1)
+    {
+        printf("Invalid employee ID.\n");
+        free(newEmployee);
+        while (getchar() != '\n');
+        return;
+    }
+
+    if (findEmployee(newEmployee->id) != NULL)
+    {
+        printf("Employee ID already exists.\n");
+        free(newEmployee);
+        return;
+    }
+
+    printf("Enter Employee Name: ");
+    scanf(" %99[^\n]", newEmployee->name);
 
     printf("Enter Designation: ");
     scanf(" %99[^\n]", newEmployee->designation);
 
-    printf("Enter Reporting Manager ID (0 for top-level): ");
-    scanf("%d", &managerID);
+    newEmployee->manager = NULL;
+    newEmployee->firstReport = NULL;
+    newEmployee->nextReport = NULL;
+    newEmployee->nextEmployee = NULL;
 
-    //if the managerID is not 0, find the manager till a valid manager is found
     while (1)
     {
-        printf("Enter Reporting Manager ID (0 for top-level): ");
-        scanf("%d", &managerID);
+        printf("Enter Reporting Manager ID (0 for no manager): ");
 
-        if (managerID == 0)
+        if (scanf("%d", &managerId) != 1)
+        {
+            printf("Invalid manager ID. Please enter a number.\n");
+            while (getchar() != '\n');
+            continue;
+        }
+
+        if (managerId == 0)
         {
             manager = NULL;
             break;
         }
 
-        manager = findEmployee(managerID);
+        manager = findEmployee(managerId);
 
-        if (manager != NULL)
-            break;
+        if (manager == NULL)
+        {
+            printf("Manager not found. Please enter a valid ID.\n");
+            continue;
+        }
 
-        printf("Reporting manager not found. Try again.\n");
+        if (managerId == newEmployee->id)
+        {
+            printf("An employee cannot be their own manager.\n");
+            continue;
+        }
+
+        break;
     }
 
-    newEmployee->id = id;
     newEmployee->manager = manager;
-    newEmployee->firstReport = NULL;
-    newEmployee->nextReport = NULL;
-    newEmployee->nextEmployee = NULL;
 
-    /* Add to the employee list */
+    /* Add employee to the main employee list */
     if (employees == NULL)
     {
         employees = newEmployee;
     }
     else
     {
-        temp = employees;
+        last = employees;
 
-        while (temp->nextEmployee != NULL)
-            temp = temp->nextEmployee;
+        while (last->nextEmployee != NULL)
+            last = last->nextEmployee;
 
-        temp->nextEmployee = newEmployee;
+        last->nextEmployee = newEmployee;
     }
 
-    /* Add to the manager's reporting list */
+    /* Add employee to their manager's reporting list */
     if (manager != NULL)
     {
         if (manager->firstReport == NULL)
@@ -107,27 +135,143 @@ void addEmployee(void)
         }
         else
         {
-            temp = manager->firstReport;
+            last = manager->firstReport;
 
-            while (temp->nextReport != NULL)
-                temp = temp->nextReport;
+            while (last->nextReport != NULL)
+                last = last->nextReport;
 
-            temp->nextReport = newEmployee;
+            last->nextReport = newEmployee;
         }
     }
 
-    printf("Employee added successfully.\n");
+    printf("Employee added successfully!\n");
 }
 
-/* Remove an employee and promote their direct reports
-   to the removed employee's manager */
+/* Count all employees reporting under an employee */
+int countEmployees(Employee *employee)
+{
+    Employee *current;
+    int count = 0;
+
+    if (employee == NULL)
+        return 0;
+
+    current = employee->firstReport;
+
+    while (current != NULL)
+    {
+        count++;
+        count += countEmployees(current);
+        current = current->nextReport;
+    }
+
+    return count;
+}
+
+/* Display an employee and their reporting hierarchy */
+void displayHierarchy(Employee *employee, int level)
+{
+    Employee *current;
+    int i;
+
+    if (employee == NULL)
+        return;
+
+    for (i = 0; i < level; i++)
+        printf("    ");
+
+    printf("ID: %d | Name: %s | Designation: %s\n",
+           employee->id,
+           employee->name,
+           employee->designation);
+
+    current = employee->firstReport;
+
+    while (current != NULL)
+    {
+        displayHierarchy(current, level + 1);
+        current = current->nextReport;
+    }
+}
+
+/* Display the hierarchy starting from one employee */
+void displayEmployeeHierarchy(void)
+{
+    int id;
+    Employee *employee;
+
+    printf("Enter Employee ID to display: ");
+
+    if (scanf("%d", &id) != 1)
+    {
+        printf("Invalid employee ID.\n");
+        while (getchar() != '\n');
+        return;
+    }
+
+    employee = findEmployee(id);
+
+    if (employee == NULL)
+    {
+        printf("Employee not found.\n");
+        return;
+    }
+
+    displayHierarchy(employee, 0);
+}
+
+/* Display the complete organization hierarchy */
+void displayCompleteHierarchy(void)
+{
+    Employee *current = employees;
+    int foundRoot = 0;
+
+    if (employees == NULL)
+    {
+        printf("No employees available.\n");
+        return;
+    }
+
+    while (current != NULL)
+    {
+        if (current->manager == NULL)
+        {
+            displayHierarchy(current, 0);
+            foundRoot = 1;
+        }
+
+        current = current->nextEmployee;
+    }
+
+    if (!foundRoot)
+        printf("No top-level employee found.\n");
+}
+
+/* Remove an employee and transfer their reports */
 void removeEmployee(void)
 {
     int id;
-    Employee *emp, *manager, *temp, *prev, *child;
+    Employee *emp;
+    Employee *manager;
+    Employee *sibling;
+    Employee *bestSibling = NULL;
+    Employee *current;
+    Employee *previous;
+    Employee *child;
+    Employee *last;
+    Employee *target;
+
+    int directReports;
+    int minimumReports = 0;
 
     printf("Enter Employee ID to remove: ");
-    scanf("%d", &id);
+
+    if (scanf("%d", &id) != 1)
+    {
+        printf("Invalid employee ID.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
     emp = findEmployee(id);
 
@@ -139,130 +283,131 @@ void removeEmployee(void)
 
     manager = emp->manager;
 
-    /* Remove employee from manager's report list */
+    /* Find the sibling with the fewest direct reports */
     if (manager != NULL)
     {
-        temp = manager->firstReport;
-        prev = NULL;
+        sibling = manager->firstReport;
 
-        while (temp != NULL && temp != emp)
+        while (sibling != NULL)
         {
-            prev = temp;
-            temp = temp->nextReport;
+            if (sibling != emp)
+            {
+                directReports = 0;
+                child = sibling->firstReport;
+
+                while (child != NULL)
+                {
+                    directReports++;
+                    child = child->nextReport;
+                }
+
+                if (bestSibling == NULL || directReports < minimumReports)
+                {
+                    bestSibling = sibling;
+                    minimumReports = directReports;
+                }
+            }
+
+            sibling = sibling->nextReport;
         }
 
-        if (temp != NULL)
+        /* Remove employee from manager's reporting list */
+        if (manager->firstReport == emp)
         {
-            if (prev == NULL)
-                manager->firstReport = emp->nextReport;
-            else
-                prev->nextReport = emp->nextReport;
+            manager->firstReport = emp->nextReport;
+        }
+        else
+        {
+            previous = manager->firstReport;
+
+            while (previous != NULL &&
+                   previous->nextReport != emp)
+            {
+                previous = previous->nextReport;
+            }
+
+            if (previous != NULL)
+                previous->nextReport = emp->nextReport;
         }
     }
 
-    /* Transfer direct reports to the removed employee's manager */
+    /* Use the sibling with the fewest reports.
+       If no sibling exists, use the original manager. */
+    target = (bestSibling != NULL) ? bestSibling : manager;
+
+    /* Transfer the removed employee's direct reports */
     child = emp->firstReport;
 
     while (child != NULL)
     {
         Employee *nextChild = child->nextReport;
 
-        child->manager = manager;
+        child->manager = target;
         child->nextReport = NULL;
 
-        if (manager != NULL)
+        if (target != NULL)
         {
-            if (manager->firstReport == NULL)
-                manager->firstReport = child;
+            if (target->firstReport == NULL)
+            {
+                target->firstReport = child;
+            }
             else
             {
-                temp = manager->firstReport;
+                last = target->firstReport;
 
-                while (temp->nextReport != NULL)
-                    temp = temp->nextReport;
+                while (last->nextReport != NULL)
+                    last = last->nextReport;
 
-                temp->nextReport = child;
+                last->nextReport = child;
             }
+        }
+        else
+        {
+            /* No manager or sibling: make the child top-level */
+            child->manager = NULL;
         }
 
         child = nextChild;
     }
 
     /* Remove employee from the main employee list */
-    temp = employees;
-    prev = NULL;
-
-    while (temp != NULL && temp != emp)
+    if (employees == emp)
     {
-        prev = temp;
-        temp = temp->nextEmployee;
-    }
-
-    if (prev == NULL)
         employees = emp->nextEmployee;
+    }
     else
-        prev->nextEmployee = emp->nextEmployee;
+    {
+        previous = employees;
+
+        while (previous != NULL &&
+               previous->nextEmployee != emp)
+        {
+            previous = previous->nextEmployee;
+        }
+
+        if (previous != NULL)
+            previous->nextEmployee = emp->nextEmployee;
+    }
 
     free(emp);
 
-    printf("Employee removed successfully.\n");
+    printf("Employee removed successfully!\n");
 }
 
-/* Recursively count employees reporting under an employee */
-int countEmployees(Employee *employee)
-{
-    int count = 0;
-    Employee *child;
-
-    if (employee == NULL)
-        return 0;
-
-    child = employee->firstReport;
-
-    while (child != NULL)
-    {
-        count++;
-        count += countEmployees(child);
-        child = child->nextReport;
-    }
-
-    return count;
-}
-
-/* Recursively display an employee and their hierarchy */
-void displayHierarchy(Employee *employee, int level)
-{
-    Employee *child;
-    int i;
-
-    if (employee == NULL)
-        return;
-
-    for (i = 0; i < level; i++)
-        printf("    ");
-
-    printf("%d - %s - %s\n",
-           employee->id,
-           employee->name,
-           employee->designation);
-
-    child = employee->firstReport;
-
-    while (child != NULL)
-    {
-        displayHierarchy(child, level + 1);
-        child = child->nextReport;
-    }
-}
-
-/* Display hierarchy of a selected employee */
-void displayEmployeeHierarchy(void)
+/* Count reports under a selected employee */
+void displayEmployeeCount(void)
 {
     int id;
     Employee *employee;
 
-    printf("Enter Employee ID: ");
-    scanf("%d", &id);
+    printf("Enter Employee ID to count reports: ");
+
+    if (scanf("%d", &id) != 1)
+    {
+        printf("Invalid employee ID.\n");
+        while (getchar() != '\n');
+        return;
+    }
 
     employee = findEmployee(id);
 
@@ -272,67 +417,33 @@ void displayEmployeeHierarchy(void)
         return;
     }
 
-    printf("\n===== EMPLOYEE HIERARCHY =====\n");
-
-    displayHierarchy(employee, 0);
-
     printf("Total Employees Under %d: %d\n",
            id, countEmployees(employee));
 }
 
-/* Display the complete organization hierarchy */
-void displayCompleteHierarchy(void)
-{
-    Employee *temp;
-    int total = 0;
-
-    if (employees == NULL)
-    {
-        printf("No employees in the organization.\n");
-        return;
-    }
-
-    printf("\n===== ORGANIZATION HIERARCHY =====\n");
-
-    temp = employees;
-
-    while (temp != NULL)
-    {
-        total++;
-        temp = temp->nextEmployee;
-    }
-
-    temp = employees;
-
-    while (temp != NULL)
-    {
-        if (temp->manager == NULL)
-            displayHierarchy(temp, 0);
-
-        temp = temp->nextEmployee;
-    }
-
-    printf("Total Employees: %d\n", total);
-}
-
+/* Main menu */
 int main(void)
 {
     int choice;
+    Employee *current;
+    Employee *next;
 
     do
     {
-        printf("\n===== EMPLOYEE HIERARCHY MANAGEMENT =====\n");
+        printf("\n===== Employee Hierarchy Management =====\n");
         printf("1. Add Employee\n");
         printf("2. Remove Employee\n");
         printf("3. Display Employee Hierarchy\n");
         printf("4. Display Complete Hierarchy\n");
-        printf("5. Exit\n");
+        printf("5. Count Employees Under an Employee\n");
+        printf("6. Exit\n");
         printf("Enter your choice: ");
 
         if (scanf("%d", &choice) != 1)
         {
-            printf("Invalid input.\n");
-            return 1;
+            printf("Invalid choice. Please enter a number.\n");
+            while (getchar() != '\n');
+            continue;
         }
 
         switch (choice)
@@ -354,14 +465,28 @@ int main(void)
                 break;
 
             case 5:
-                printf("Exiting program.\n");
+                displayEmployeeCount();
+                break;
+
+            case 6:
+                printf("Exiting program...\n");
                 break;
 
             default:
-                printf("Invalid choice.\n");
+                printf("Invalid choice. Please try again.\n");
         }
 
-    } while (choice != 5);
+    } while (choice != 6);
+
+    /* Free all remaining employees */
+    current = employees;
+
+    while (current != NULL)
+    {
+        next = current->nextEmployee;
+        free(current);
+        current = next;
+    }
 
     return 0;
 }
