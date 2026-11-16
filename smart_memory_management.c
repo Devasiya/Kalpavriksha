@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define MIN_POOL_SIZE 1
 #define MAX_POOL_SIZE 1000000
@@ -24,7 +23,6 @@ int blockCount = 1;
 int capacity = 2;
 int nextID = 1;
 int strategy = 1;
-
 
 // Function declarations
 int findFirstFit(int size);
@@ -420,9 +418,6 @@ void resizeMemory(int id, int newSize)
     memcpy(memory + newStart, temp, oldSize);
 
     free(temp);
-
-    // Release old allocation
-    index = findBlockByID(id);
 
     // The search may return the new allocation.
     // Find the old location using its original offset.
