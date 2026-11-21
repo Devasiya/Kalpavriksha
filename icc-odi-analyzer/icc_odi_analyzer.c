@@ -63,9 +63,8 @@ typedef struct
 Team teamList[MAX_TEAMS];
 int totalTeams = 0;
 
-/* --------------------------------------------------
-   Utility functions
--------------------------------------------------- */
+
+// Utility functions
 
 Role getRoleFromString(const char *role)
 {
@@ -137,9 +136,9 @@ float calculatePerformanceIndex(ODIPlayer *player)
     }
 }
 
-/* --------------------------------------------------
-   Team searching - Binary Search O(log t)
--------------------------------------------------- */
+
+//Team searching - Binary Search O(log t)
+
 
 Team *searchTeamById(int teamId)
 {
@@ -173,10 +172,9 @@ Team *searchTeamByName(const char *name)
     return NULL;
 }
 
-/* --------------------------------------------------
-   Player comparison
-   Higher Performance Index comes first
--------------------------------------------------- */
+
+//Player comparison
+//Higher Performance Index comes first
 
 int playerComesBefore(ODIPlayer *a, ODIPlayer *b)
 {
@@ -186,9 +184,8 @@ int playerComesBefore(ODIPlayer *a, ODIPlayer *b)
     return a->playerId < b->playerId;
 }
 
-/* --------------------------------------------------
-   Linked list insertion
--------------------------------------------------- */
+
+//Linked list insertion
 
 void insertPlayer(Team *team, ODIPlayer *player)
 {
@@ -222,9 +219,9 @@ void insertPlayer(Team *team, ODIPlayer *player)
     *current = player;
 }
 
-/* --------------------------------------------------
-   Duplicate Player ID checking
--------------------------------------------------- */
+
+//Duplicate Player ID checking
+
 
 int playerIdExists(int id)
 {
@@ -244,9 +241,8 @@ int playerIdExists(int id)
     return 0;
 }
 
-/* --------------------------------------------------
-   Initialization
--------------------------------------------------- */
+
+//Initialization
 
 void initializeTeams(void)
 {
@@ -311,9 +307,8 @@ void initializeTeams(void)
     printf("Players initialized: %d\n", playerCount);
 }
 
-/* --------------------------------------------------
-   Display helpers
--------------------------------------------------- */
+
+//Display helpers
 
 void printPlayerHeader(void)
 {
@@ -353,9 +348,8 @@ void printPlayerRowWithTeam(ODIPlayer *player)
            player->performanceIndex);
 }
 
-/* --------------------------------------------------
-   1. Add Player to Team
--------------------------------------------------- */
+
+//1. Add Player to Team
 
 void addPlayerToTeam(void)
 {
@@ -439,9 +433,8 @@ void addPlayerToTeam(void)
     printf("\nPlayer added successfully to Team %s!\n", team->name);
 }
 
-/* --------------------------------------------------
-   2. Display Players of a Specific Team
--------------------------------------------------- */
+
+//2. Display Players of a Specific Team
 
 void displayPlayersOfTeam(void)
 {
@@ -476,9 +469,8 @@ void displayPlayersOfTeam(void)
            team->averageBattingStrikeRate);
 }
 
-/* --------------------------------------------------
-   3. Sort Teams by Average Batting Strike Rate
--------------------------------------------------- */
+
+//3. Sort Teams by Average Batting Strike Rate
 
 void mergeTeams(Team **arr, Team **temp, int left, int mid, int right)
 {
@@ -550,10 +542,9 @@ void displayTeamsByStrikeRate(void)
     printf("------------------------------------------------------------------\n");
 }
 
-/* --------------------------------------------------
-   4. Display Top K Players of a Team by Role
-   O(K) time after role-specific sorted list is maintained
--------------------------------------------------- */
+
+//4. Display Top K Players of a Team by Role
+//O(K) time after role-specific sorted list is maintained
 
 void displayTopKPlayers(void)
 {
@@ -611,9 +602,8 @@ void displayTopKPlayers(void)
     printf("---------------------------------------------------------------------------------------------\n");
 }
 
-/* --------------------------------------------------
-   Heap functions for K-way merge
--------------------------------------------------- */
+
+//Heap functions for K-way merge
 
 int heapComesBefore(HeapNode a, HeapNode b)
 {
@@ -679,11 +669,10 @@ HeapNode heapPop(MinHeap *heap)
     return result;
 }
 
-/* --------------------------------------------------
-   5. Display All Players Across All Teams by Role
-   K-way merge of 10 sorted role lists
-   O(N log t)
--------------------------------------------------- */
+
+//5. Display All Players Across All Teams by Role
+//K-way merge of 10 sorted role lists
+//O(N log t)
 
 void displayAllPlayersByRole(void)
 {
@@ -752,9 +741,7 @@ void displayAllPlayersByRole(void)
     printf("Total Players Displayed: %d\n", totalDisplayed);
 }
 
-/* --------------------------------------------------
-   Menu
--------------------------------------------------- */
+//Menu
 
 void displayMenu(void)
 {
@@ -772,9 +759,8 @@ void displayMenu(void)
     printf("Enter your choice: ");
 }
 
-/* --------------------------------------------------
-   Free dynamically allocated players
--------------------------------------------------- */
+//Free dynamically allocated players
+
 
 void freeAllPlayers(void)
 {
@@ -793,9 +779,6 @@ void freeAllPlayers(void)
     }
 }
 
-/* --------------------------------------------------
-   Main
--------------------------------------------------- */
 
 int main(void)
 {
