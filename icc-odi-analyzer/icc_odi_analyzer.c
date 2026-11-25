@@ -57,7 +57,7 @@ typedef struct
 {
     HeapNode nodes[MAX_TEAMS];
     int size;
-} MinHeap;
+} MaxHeap;
 
 /* Global team array */
 Team teamList[MAX_TEAMS];
@@ -610,7 +610,7 @@ int heapComesBefore(HeapNode a, HeapNode b)
     return playerComesBefore(a.player, b.player);
 }
 
-void heapPush(MinHeap *heap, HeapNode node)
+void heapPush(MaxHeap *heap, HeapNode node)
 {
     int i = heap->size++;
 
@@ -628,7 +628,7 @@ void heapPush(MinHeap *heap, HeapNode node)
     heap->nodes[i] = node;
 }
 
-HeapNode heapPop(MinHeap *heap)
+HeapNode heapPop(MaxHeap *heap)
 {
     HeapNode result = heap->nodes[0];
     HeapNode last = heap->nodes[--heap->size];
@@ -642,26 +642,24 @@ HeapNode heapPop(MinHeap *heap)
     {
         int left = 2 * i + 1;
         int right = 2 * i + 2;
-        int smallest = i;
 
-        if (left < heap->size &&
-            heapComesBefore(heap->nodes[left], last))
-        {
-            smallest = left;
-        }
-
-        if (right < heap->size &&
-            heapComesBefore(heap->nodes[right], 
-                           heap->nodes[smallest]))
-        {
-            smallest = right;
-        }
-
-        if (smallest == i)
+        if (left >= heap->size)
             break;
 
-        heap->nodes[i] = heap->nodes[smallest];
-        i = smallest;
+        int bestChild = left;
+
+        if (right < heap->size &&
+            heapComesBefore(heap->nodes[right],
+                            heap->nodes[left]))
+        {
+            bestChild = right;
+        }
+
+        if (heapComesBefore(last, heap->nodes[bestChild]))
+            break;
+
+        heap->nodes[i] = heap->nodes[bestChild];
+        i = bestChild;
     }
 
     heap->nodes[i] = last;
@@ -686,7 +684,7 @@ void displayAllPlayersByRole(void)
 
     int index = getRoleIndex(role);
 
-    MinHeap heap;
+    MaxHeap heap;
     heap.size = 0;
 
     /* Add first player from every team's sorted role list */
